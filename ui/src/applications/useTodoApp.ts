@@ -1,9 +1,15 @@
 import { Todo } from '../domain/todo'
 import { TodoList } from '../domain/todolist'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import LocalStorageService from '../services/LocalStorageService'
 
 function useTodoApp() {
 	const [todos, setTodos] = useState<TodoList>(new TodoList())
+
+	// Load todos from local storage on initial render 
+	useEffect(() => {
+		getTodosFromStorage()
+	}, [])
 
 	const addNewTodo = (task: string) => {
 		if (!task.trim()) return
@@ -13,6 +19,9 @@ function useTodoApp() {
 
 		// Bussiness logic
 		setTodos(updatedList)
+
+		// Sroteage to local storage
+		LocalStorageService.save('todos', updatedList.getAllTodo())
 	}
 
 	const deleteTodo = (id: string) => {
@@ -22,6 +31,9 @@ function useTodoApp() {
 
 		// Bussiness logic
 		setTodos(updatedList)
+
+		// Storage to local storage
+		LocalStorageService.save('todos', updatedList.getAllTodo())
 	}
 
 	const toggleTodo = (id: string) => {
@@ -34,6 +46,19 @@ function useTodoApp() {
 
 		// Bussiness logic
 		setTodos(new TodoList(updatedTodos))
+
+		// Storage to local storage
+		LocalStorageService.save('todos', updatedTodos)
+	}
+
+	const getTodosFromStorage = () => {
+		const storedTodos = LocalStorageService.load<{ id: string; task: string; completed: boolean }[]>('todos')
+		if (storedTodos) {
+			const todoInstances = storedTodos.map(
+				todoData => new Todo(todoData.id, todoData.task, todoData.completed)
+			)
+			setTodos(new TodoList(todoInstances))
+		}
 	}
 
 	return { todos, addNewTodo, deleteTodo, toggleTodo }

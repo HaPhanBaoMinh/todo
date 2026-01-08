@@ -1,4 +1,4 @@
-import useTodoApp from './application/useTodoApp';
+import useTodoApp from './applications/useTodoApp';
 import TodoItem from './components/TodoItem';
 
 function App() {

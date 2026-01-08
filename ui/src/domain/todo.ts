@@ -17,7 +17,7 @@ export class Todo {
 	}
 
 	getTask(): string {
-		return this.task;
+		return this.task 
 	}
 
 	isCompleted(): boolean {
