@@ -21,6 +21,6 @@ export class TodoList {
 	}
 
 	getAllTodo(): Todo[] {
-		return [...this.todos]; // Return copy to prevent mutation
+		return [...this.todos];
 	}
 }
