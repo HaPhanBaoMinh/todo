@@ -2,14 +2,28 @@ import { Todo } from '../domain/todo'
 import { TodoList } from '../domain/todolist'
 import { useEffect, useState } from 'react'
 import LocalStorageService from '../services/LocalStorageService'
+import ApiService from '../services/ApiService'
 
 function useTodoApp() {
 	const [todos, setTodos] = useState<TodoList>(new TodoList())
+	const apiService = new ApiService(process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080')
 
 	// Load todos from local storage on initial render 
 	useEffect(() => {
-		getTodosFromStorage()
+		apiFetchTodos()
 	}, [])
+
+	const apiFetchTodos = async () => {
+		try {
+			const response = await apiService.get('/todos')
+
+			setTodos(new TodoList(todoInstances))
+			LocalStorageService.save('todos', todoInstances)
+		} catch (error) {
+			console.error('Error fetching todos from API:', error)
+			getTodosFromStorage()
+		}
+	}
 
 	const addNewTodo = (task: string) => {
 		if (!task.trim()) return
