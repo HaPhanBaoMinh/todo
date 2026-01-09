@@ -17,8 +17,8 @@ function useTodoApp() {
 		try {
 			const response = await apiService.get('/todos')
 
-			setTodos(new TodoList(todoInstances))
-			LocalStorageService.save('todos', todoInstances)
+			// setTodos(new TodoList(todoInstances))
+			// LocalStorageService.save('todos', todoInstances)
 		} catch (error) {
 			console.error('Error fetching todos from API:', error)
 			getTodosFromStorage()

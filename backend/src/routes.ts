@@ -1,7 +1,14 @@
-import { Router } from "express"
+import { Router } from 'express';
+import IToDoController from './controllers/IToDoController';
 
-export function routes() {
-	const route = Router()
+const toDoRoutes = (toDoController: IToDoController) => {
+	const router = Router();
 
-	return route 
+	// Middleware to ensure DB connection
+	router.get('/todos', toDoController.getToDos.bind(toDoController));
+	router.post('/todo', toDoController.createToDo.bind(toDoController));
+
+	return router;
 }
+
+export { toDoRoutes };

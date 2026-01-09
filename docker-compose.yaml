@@ -1,30 +1,31 @@
-services:
-  web:
-    build: ./ui
-    ports:
-      - "8000:8000"
-    restart: always
-    environment:
-      - MONGO_URL=mongodb://admin:password@db:27017
-      - PORT=8000
+version: "3.8"
 
+services:
   db:
     image: mongo:7.0
+    container_name: mongo_db
+    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
-      - db_data:/var/lib/postgresql/data
-    restart: always
+      - db_data:/data/db   # <-- correct data path for Mongo
+    ports:
+      - "27017:27017"      # optional external access
 
   mongo-express:
-    image: mongo-express:1.0
+    image: mongo-express:latest
+    container_name: mongo_express
+    restart: always
+    depends_on:
+      - db
+    environment:
+      ME_CONFIG_MONGODB_URL: 'mongodb://admin:password@db:27017'
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
     ports:
       - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_SERVER: db
-    restart: always
+
 volumes:
-  db_data: {}
+  db_data:
+
