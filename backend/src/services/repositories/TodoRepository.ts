@@ -3,7 +3,7 @@ import IDatabase from '../db/IDatabase';
 import Todo from '../../domain/entities/Todo';
 
 interface TodoDocument {
-	id: number;
+	id: string;
 	task: string;
 	completed: boolean;
 }
@@ -19,7 +19,7 @@ class TodoRepository implements ITodoRepository {
 	async findAll(): Promise<Todo[]> {
 		try {
 			const todos = await this.dbService.findMany<TodoDocument>(this.collectionName);
-			return todos.map(doc => new Todo(doc.id, doc.task, doc.completed));
+			return todos.map(doc => new Todo(doc.task, doc.id, doc.completed));
 		} catch (error) {
 			console.error('Error fetching todos:', error);
 			return [];
@@ -47,9 +47,9 @@ class TodoRepository implements ITodoRepository {
 
 	async create(todo: Todo): Promise<Todo> {
 		const document: TodoDocument = {
-			id: todo.id,
-			task: todo.task,
-			completed: todo.completed
+			id: todo.Id,
+			task: todo.Task,
+			completed: todo.Completed
 		};
 
 		const result = await this.dbService.insertOne<TodoDocument>(
@@ -67,11 +67,11 @@ class TodoRepository implements ITodoRepository {
 		}
 
 		const updateDoc: any = { $set: {} };
-		if (todoUpdate.task !== undefined) {
-			updateDoc.$set.task = todoUpdate.task;
+		if (todoUpdate.Task !== undefined) {
+			updateDoc.$set.task = todoUpdate.Task;
 		}
-		if (todoUpdate.completed !== undefined) {
-			updateDoc.$set.completed = todoUpdate.completed;
+		if (todoUpdate.Completed !== undefined) {
+			updateDoc.$set.completed = todoUpdate.Completed;
 		}
 
 		const result = await this.dbService.updateOne<TodoDocument>(

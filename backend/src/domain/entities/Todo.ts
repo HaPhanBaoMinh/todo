@@ -6,7 +6,7 @@ class Todo {
 	private task: string;
 	private completed: boolean;
 
-	constructor(id: string, task: string, completed: boolean = false) {
+	constructor(task: string, id: string = '', completed: boolean = false) {
 		this.id = id || uuidv4();
 		this.task = task;
 		this.completed = completed;
@@ -15,6 +15,19 @@ class Todo {
 	toString = (): string => {
 		return `Todo [id=${this.id}, task=${this.task}, completed=${this.completed}]`;
 	}
+
+	get Id(): string {
+		return this.id;
+	}
+
+	get Task(): string {
+		return this.task;
+	}
+
+	get Completed(): boolean {
+		return this.completed;
+	}
+
 }
 
 export default Todo;
