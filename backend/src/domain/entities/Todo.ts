@@ -1,13 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
-
-
 class Todo {
-	private id: string
+	private id: string | null;
 	private task: string;
 	private completed: boolean;
 
-	constructor(task: string, id: string = '', completed: boolean = false) {
-		this.id = id || uuidv4();
+	constructor(task: string, id: string | null, completed: boolean = false) {
+		this.id = id;
 		this.task = task;
 		this.completed = completed;
 	}
@@ -16,8 +13,20 @@ class Todo {
 		return `Todo [id=${this.id}, task=${this.task}, completed=${this.completed}]`;
 	}
 
-	get Id(): string {
-		return this.id;
+	toJSON() {
+		return {
+			id: this.id,
+			task: this.task,
+			completed: this.completed
+		};
+	}
+
+	get Id(): string | null {
+		return this.id
+	}
+
+	set Id(value: string | null) {
+		this.id = value;
 	}
 
 	get Task(): string {

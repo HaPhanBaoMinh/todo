@@ -21,8 +21,19 @@ class TodoUseCase implements ITodoUseCase {
 		return this.todoRepository.create(todo);
 	}
 
-	async updateTodo(id: string, todo: Partial<Todo>): Promise<Todo | null> {
-		return this.todoRepository.update(id, todo);
+	async toggleTodo(id: string): Promise<Todo | null> {
+		const existingTodo = await this.todoRepository.findById(id);
+		if (!existingTodo) {
+			return null;
+		}
+
+		const updatedTodo = new Todo(
+			existingTodo.Task,
+			existingTodo.Id,
+			!existingTodo.Completed
+		);
+
+		return this.todoRepository.update(id, updatedTodo);
 	}
 
 	async deleteTodo(id: string): Promise<boolean> {

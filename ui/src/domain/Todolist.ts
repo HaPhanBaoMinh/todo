@@ -1,5 +1,4 @@
-// domain/todolist.ts
-import { Todo } from './todo';
+import { Todo } from './Todo';
 
 export class TodoList {
 	private todos: Todo[];

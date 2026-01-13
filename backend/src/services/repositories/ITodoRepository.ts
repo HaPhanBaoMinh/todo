@@ -9,4 +9,3 @@ interface ITodoRepository {
 }
 
 export default ITodoRepository;
-
