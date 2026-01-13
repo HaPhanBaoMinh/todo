@@ -31,15 +31,8 @@ class TodoUseCase implements ITodoUseCase {
 	}
 
 	async toggleTodo(id: string): Promise<void> {
-		const todos = await this.repository.getAll();
-		const todo = todos.find(t => t.getId() === id);
-
-		if (!todo) {
-			throw new Error(`Todo with id ${id} not found`);
-		}
-
-		todo.toggle();
-		await this.repository.update(id, todo);
+		// Just call the API to toggle - the backend handles the logic
+		await this.repository.update(id, {} as any);
 	}
 
 	async deleteTodo(id: string): Promise<void> {

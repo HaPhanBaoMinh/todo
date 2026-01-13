@@ -30,8 +30,7 @@ function useTodoApp() {
 		} catch (error) {
 			console.error('Error fetching todos:', error)
 			// Fallback to local storage if API fails
-			// const localUseCase = new TodoUseCase(localRepository)
-			const localUseCase = new TodoUseCase(apiRepository)
+			const localUseCase = new TodoUseCase(localRepository)
 			const todoList = await localUseCase.getTodos()
 			setTodos(todoList)
 		} finally {
@@ -43,28 +42,57 @@ function useTodoApp() {
 		if (!task.trim()) return
 
 		try {
-			await todoUseCase.addTodo(task)
-			await fetchTodos() // Refresh the list
+			const newTodo = await todoUseCase.addTodo(task)
+			// Optimistic update: add to state immediately without refetching
+			const updatedList = new TodoList([...todos.getAllTodo(), newTodo])
+			setTodos(updatedList)
 		} catch (error) {
 			console.error('Error adding todo:', error)
+			// Revert on error by refetching
+			await fetchTodos()
 		}
 	}
 
 	const deleteTodo = async (id: string) => {
+		// Save current state for rollback
+		const previousTodos = todos
+
 		try {
+			// Optimistic update: remove from state immediately
+			const updatedList = new TodoList(
+				todos.getAllTodo().filter(todo => todo.getId() !== id)
+			)
+			setTodos(updatedList)
+
+			// Sync with API in background
 			await todoUseCase.deleteTodo(id)
-			await fetchTodos() // Refresh the list
 		} catch (error) {
 			console.error('Error deleting todo:', error)
+			// Rollback on error
+			setTodos(previousTodos)
 		}
 	}
 
 	const toggleTodo = async (id: string) => {
+		// Save current state for rollback
+		const previousTodos = todos
+
 		try {
+			// Optimistic update: toggle in state immediately
+			const updatedTodos = todos.getAllTodo().map(todo => {
+				if (todo.getId() === id) {
+					todo.toggle()
+				}
+				return todo
+			})
+			setTodos(new TodoList(updatedTodos))
+
+			// Sync with API in background
 			await todoUseCase.toggleTodo(id)
-			await fetchTodos() // Refresh the list
 		} catch (error) {
 			console.error('Error toggling todo:', error)
+			// Rollback on error
+			setTodos(previousTodos)
 		}
 	}
 
