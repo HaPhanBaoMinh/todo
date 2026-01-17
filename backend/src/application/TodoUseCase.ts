@@ -1,6 +1,7 @@
 import ITodoUseCase from './ITodoUseCase';
 import ITodoRepository from '../services/repositories/ITodoRepository';
 import Todo from '../domain/entities/Todo';
+import { TodoExpiredTimeError } from '../domain/errors/TodoError';
 
 class TodoUseCase implements ITodoUseCase {
 	private todoRepository: ITodoRepository;
@@ -17,7 +18,12 @@ class TodoUseCase implements ITodoUseCase {
 		return this.todoRepository.findById(id);
 	}
 
-	async createTodo(todo: Todo): Promise<Todo> {
+	async createTodo(task: string): Promise<Todo> {
+		if (!task.trim()) {
+			throw new Error('Task cannot be empty');
+		}
+
+		const todo = new Todo(task, false, new Date());
 		return this.todoRepository.create(todo);
 	}
 
@@ -27,11 +33,16 @@ class TodoUseCase implements ITodoUseCase {
 			return null;
 		}
 
-		const updatedTodo = new Todo(
-			existingTodo.Task,
-			existingTodo.Id,
-			!existingTodo.Completed
-		);
+		// Only toggleTodo in 10 minutes after creation
+		const tenMinutes = 10 * 60 * 1000;
+		const now = new Date();
+		const createdAt = existingTodo.CreatedAt;
+		if (createdAt && now.getTime() - createdAt.getTime() > tenMinutes) {
+			throw new TodoExpiredTimeError('Cannot toggle todo after 10 minutes of creation');
+		}
+
+		const updatedTodo = new Todo(existingTodo.Task, !existingTodo.Completed, existingTodo.CreatedAt, existingTodo.Id);
+		console.log('Toggling todo:', updatedTodo);
 
 		return this.todoRepository.update(id, updatedTodo);
 	}

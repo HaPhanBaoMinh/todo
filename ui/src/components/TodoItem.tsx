@@ -1,6 +1,8 @@
 interface TodoItemProps {
 	task: string;
 	completed: boolean;
+	createdAt: string;
+	error: string | null;
 	onDeleteCallback: () => void;
 	onToggleCompleteCallback: () => void;
 }
@@ -47,6 +49,11 @@ function TodoItem(props: TodoItemProps) {
 						Done
 					</button>
 
+				</div>
+				<div>
+					<span className="text-muted small text-gray-800">
+						{props.createdAt}
+					</span>
 				</div>
 			</div>
 		</div>

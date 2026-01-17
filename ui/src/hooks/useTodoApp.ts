@@ -4,6 +4,8 @@ import ApiService from '../services/ApiService'
 import TodoUseCase from '../application/TodoUseCase'
 import TodoApiRepository from '../repositories/TodoApiRepository'
 import TodoLocalRepository from '../repositories/TodoLocalRepository'
+import { TodoExpiredTimeError } from '../domain/TodoError'
+import { Todo } from '../domain/Todo'
 
 // Initialize services and use case outside the hook to avoid re-creation
 const apiService = new ApiService(process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api')
@@ -16,6 +18,7 @@ const todoUseCase = new TodoUseCase(apiRepository)
 function useTodoApp() {
 	const [todos, setTodos] = useState<TodoList>(new TodoList())
 	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [error, setError] = useState<string | null>(null)
 
 	// Load todos on initial render 
 	useEffect(() => {
@@ -39,6 +42,7 @@ function useTodoApp() {
 	}
 
 	const addNewTodo = async (task: string) => {
+		setError(null)
 		if (!task.trim()) return
 
 		try {
@@ -54,6 +58,7 @@ function useTodoApp() {
 	}
 
 	const deleteTodo = async (id: string) => {
+		setError(null)
 		// Save current state for rollback
 		const previousTodos = todos
 
@@ -74,8 +79,13 @@ function useTodoApp() {
 	}
 
 	const toggleTodo = async (id: string) => {
+		setError(null)
 		// Save current state for rollback
-		const previousTodos = todos
+		const previousTodos = new TodoList(
+			todos.getAllTodo().map(todo =>
+				new Todo(todo.getId(), todo.getTask(), todo.isCompleted(), todo.getCreatedAt())
+			)
+		);
 
 		try {
 			// Optimistic update: toggle in state immediately
@@ -90,13 +100,16 @@ function useTodoApp() {
 			// Sync with API in background
 			await todoUseCase.toggleTodo(id)
 		} catch (error) {
-			console.error('Error toggling todo:', error)
+			if (error instanceof TodoExpiredTimeError) {
+				setError(error.message)
+			}
+
 			// Rollback on error
 			setTodos(previousTodos)
 		}
 	}
 
-	return { todos, addNewTodo, deleteTodo, toggleTodo, isLoading }
+	return { todos, addNewTodo, deleteTodo, toggleTodo, isLoading, error }
 }
 
 export default useTodoApp

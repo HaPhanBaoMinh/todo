@@ -2,7 +2,7 @@ import useTodoApp from './hooks/useTodoApp';
 import TodoItem from './components/TodoItem';
 
 function App() {
-	const { todos, addNewTodo, deleteTodo, toggleTodo } = useTodoApp();
+	const { todos, addNewTodo, deleteTodo, toggleTodo, error } = useTodoApp();
 
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -34,9 +34,21 @@ function App() {
 					</div>
 				</div>
 			</form>
+			{error && (
+				<div className="row justify-content-center mb-2">
+					<div className="col-10 col-md-8 col-lg-6">
+						<div className="alert alert-danger" role="alert">
+							{error}
+						</div>
+					</div>
+				</div>
+			)}
+			{/* Todo Items */}
 			<hr />
 			{todos.getAllTodo().map(todo => (
 				<TodoItem
+					error={error}
+					createdAt={todo.getCreatedAt()}
 					key={todo.getId()}
 					task={todo.getTask()}
 					completed={todo.isCompleted()}

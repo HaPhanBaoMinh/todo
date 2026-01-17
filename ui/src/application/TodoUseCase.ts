@@ -31,7 +31,6 @@ class TodoUseCase implements ITodoUseCase {
 	}
 
 	async toggleTodo(id: string): Promise<void> {
-		// Just call the API to toggle - the backend handles the logic
 		await this.repository.update(id, {} as any);
 	}
 

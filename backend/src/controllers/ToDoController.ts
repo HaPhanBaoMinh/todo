@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import TodoUseCase from '../application/TodoUseCase';
 import ITodoController from './IToDoController';
 import Todo from '../domain/entities/Todo';
+import { TodoExpiredTimeError } from '../domain/errors/TodoError';
 
 class TodoController implements ITodoController {
 	private todoUseCase: TodoUseCase;
@@ -29,10 +30,7 @@ class TodoController implements ITodoController {
 				return;
 			}
 
-			const todoData = new Todo(body.task, null);
-			console.log('Creating Todo:', todoData.toString());
-
-			const newTodo = await this.todoUseCase.createTodo(todoData);
+			const newTodo = await this.todoUseCase.createTodo(body.task);
 
 			res.status(201).json(newTodo);
 		} catch (error) {
@@ -50,6 +48,10 @@ class TodoController implements ITodoController {
 			await this.todoUseCase.toggleTodo(id);
 			res.status(200).json({ message: 'Todo toggled successfully' });
 		} catch (error) {
+			if (error instanceof TodoExpiredTimeError) {
+				res.status(400).json({ error: error.message, error_code: error.code });
+				return;
+			}
 			res.status(500).json({ error: 'Failed to toggle todo' });
 		}
 	}

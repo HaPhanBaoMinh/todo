@@ -1,19 +1,20 @@
 import ITodoRepository from './ITodoRepository';
-import IDatabase from '../db/IDatabase';
 import Todo from '../../domain/entities/Todo';
 import { ObjectId } from 'mongodb';
+import MongoService from '../db/MongoService';
 
 interface TodoDocument {
 	_id: ObjectId;
 	task: string;
 	completed: boolean;
+	createdAt: Date
 }
 
 class TodoRepository implements ITodoRepository {
-	private dbService: IDatabase;
+	private dbService: MongoService;
 	private collectionName = 'todos';
 
-	constructor(dbService: IDatabase) {
+	constructor(dbService: MongoService) {
 		this.dbService = dbService;
 	}
 
@@ -22,7 +23,7 @@ class TodoRepository implements ITodoRepository {
 			const todos = await this.dbService.findMany<TodoDocument>(this.collectionName);
 			return todos.map(doc => {
 				const _idString = doc._id.toHexString();
-				return new Todo(doc.task, _idString, doc.completed);
+				return new Todo(doc.task, doc.completed, doc.createdAt, _idString);
 			})
 		} catch (error) {
 			console.error('Error fetching todos:', error);
@@ -45,7 +46,7 @@ class TodoRepository implements ITodoRepository {
 			}
 
 			const _idString = todo._id.toHexString();
-			return new Todo(todo.task, _idString, todo.completed);
+			return new Todo(todo.task, todo.completed, todo.createdAt, _idString);
 		} catch (error) {
 			console.error('Error finding todo by id:', error);
 			return null;
@@ -53,10 +54,12 @@ class TodoRepository implements ITodoRepository {
 	}
 
 	async create(todo: Todo): Promise<Todo> {
+		const now = new Date();
 		const document: TodoDocument = {
 			_id: new ObjectId(),
 			task: todo.Task,
-			completed: todo.Completed
+			completed: todo.Completed,
+			createdAt: now
 		};
 
 		const result = await this.dbService.insertOne<TodoDocument>(
@@ -66,13 +69,13 @@ class TodoRepository implements ITodoRepository {
 
 		const _idString = result._id.toHexString();
 
-		return new Todo(result.task, _idString, result.completed);
+		return new Todo(result.task, false, result.createdAt, _idString);
 	}
 
 	async update(id: string, todoUpdate: Partial<Todo>): Promise<Todo | null> {
 		try {
 			const updateDoc: any = { $set: {} };
-			
+
 			// Check if todoUpdate is a Todo instance or a plain object
 			if (todoUpdate instanceof Todo) {
 				if (todoUpdate.Task !== undefined) {
@@ -103,7 +106,7 @@ class TodoRepository implements ITodoRepository {
 
 			const _idString = result._id.toHexString();
 
-			return new Todo(result.task, _idString, result.completed);
+			return new Todo(result.task, result.completed, result.createdAt, _idString);
 		} catch (error) {
 			console.error('Error updating todo:', error);
 			return null;

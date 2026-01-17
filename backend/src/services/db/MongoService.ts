@@ -1,7 +1,6 @@
 import { MongoClient, Db, WithId, Filter, OptionalId, UpdateFilter, Document, OptionalUnlessRequiredId } from 'mongodb';
-import IDatabase from './IDatabase';
 
-class MongoService implements IDatabase {
+class MongoService {
 	private client: MongoClient;
 	private db: Db | null = null;
 
@@ -41,7 +40,7 @@ class MongoService implements IDatabase {
 		}
 	}
 
-	async findMany<T extends Document = Document>(collection: string, filter: Filter<T> = {}): Promise<WithId<T>[]> {
+	async findMany<T extends Document = Document>(collection: string, filter: Filter<T> = {} as Filter<T>): Promise<WithId<T>[]> {
 		return this.getDb()
 			.collection<T>(collection)
 			.find(filter)

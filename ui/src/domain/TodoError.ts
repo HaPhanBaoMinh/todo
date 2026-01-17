@@ -15,4 +15,9 @@ class TodoExpiredTimeError extends ExtendableError implements ErrorTodo {
 	}
 }
 
-export { TodoExpiredTimeError };
+enum TodoErrorCode {
+	TODO_EXPIRED_TIME = "TODO_EXPIRED_TIME",
+}
+
+export { TodoExpiredTimeError, TodoErrorCode };
+
